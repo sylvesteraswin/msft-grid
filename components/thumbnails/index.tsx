@@ -29,8 +29,13 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
   const handleLoading = useCallback(async (token?: string | null) => {
     await fetch(`/api/items${token ? `?continuation=${token}` : ""}`)
       .then((res) => res.json() as Promise<DataType>)
-      .then((response) =>
-        fetchImage(response.items, "thumbnail")
+      .then((response) => {
+        if (!response || !response.items || response.items.length === 0) {
+          console.warn("No items returned from API");
+          return;
+        }
+        console.log("Fetched items:", response.items);
+        return fetchImage(response.items, "thumbnail")
           .then((images) => {
             setImages((prevImages) => {
               const newImages = [...(prevImages || []), ...images];
@@ -44,8 +49,8 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
           .finally(() => {
             isLoading.current = false;
             console.log("Loading complete, current token:", response.token);
-          })
-      );
+          });
+      });
   }, []);
 
   const handleLoadMore = useCallback(() => {
@@ -81,12 +86,11 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
       className="flex flex-col gap-2 min-h-[200px] max-h-[400px] overflow-hidden overflow-y-auto"
       ref={containerRef}
     >
-      {!images ||
-        (images?.length === 0 && (
-          <li className="w-full h-full flex items-center justify-center bg-gray-200 animate-pulse">
-            No images available
-          </li>
-        ))}
+      {!isLoading.current && (!images || images?.length === 0) && (
+        <li className="relative aspect-[600/400] flex items-center justify-center bg-gray-200 text-xs">
+          No images available
+        </li>
+      )}
       {images &&
         images?.map((url, index) => (
           <li
@@ -109,7 +113,7 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
         <li
           data-index={"LOAD_MORE"}
           ref={setRef}
-          className="text-center text-gray-500 relative aspect-[600/400]"
+          className="relative aspect-[600/400] flex items-center justify-center bg-gray-200 animate-pulse text-xs"
         >
           Loading...
         </li>

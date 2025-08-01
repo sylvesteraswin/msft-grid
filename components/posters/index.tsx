@@ -26,6 +26,11 @@ export const Posters = ({ visibleItems }: Props) => {
 
   return (
     <ul className="grid grid-cols-3 gap-2">
+      {(!images || images?.length === 0) && (
+        <li className="relative aspect-[600/400] flex items-center justify-center bg-gray-200 text-xs">
+          No images available
+        </li>
+      )}
       {images?.map((url, index) => (
         <li
           className="relative aspect-[600/400]"
