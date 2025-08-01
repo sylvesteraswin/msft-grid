@@ -16,36 +16,55 @@ export const useObserver = (
 ) => {
   const imgRefs = useRef<(HTMLLIElement | null)[]>([]);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const pendingChanges = useRef<Map<number, boolean>>(new Map());
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && "IntersectionObserver" in window) {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
+  const debouncedSetVisible = useMemo(
+    () =>
+      debounce(() => {
+        if (pendingChanges.current.size > 0) {
           setVisible((prevVisible) => {
             const newList = new Set<number>(prevVisible);
 
-            entries.forEach((entry) => {
-              const isLoadMore =
-                entry.target.getAttribute("data-index") === "LOAD_MORE";
-              if (isLoadMore) {
-                if (entry.isIntersecting) {
-                  // Load more items logic can be implemented here
-                  if (typeof handleLoadMore === "function") {
-                    handleLoadMore();
-                  }
-                }
-                return;
-              }
-              const index = Number(entry.target.getAttribute("data-index"));
-              if (entry.isIntersecting) {
+            pendingChanges.current.forEach((isVisible, index) => {
+              if (isVisible) {
                 newList.add(index);
               } else {
                 newList.delete(index);
               }
             });
 
-            return new Set(newList);
+            pendingChanges.current.clear();
+            return newList;
           });
+        }
+      }, 150),
+    [setVisible]
+  );
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "IntersectionObserver" in window) {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          // console.log("IntersectionObserver entries:", entries);
+
+          entries.forEach((entry) => {
+            const isLoadMore =
+              entry.target.getAttribute("data-index") === "LOAD_MORE";
+            if (isLoadMore) {
+              if (entry.isIntersecting) {
+                if (typeof handleLoadMore === "function") {
+                  handleLoadMore();
+                }
+              }
+              return;
+            }
+
+            const index = Number(entry.target.getAttribute("data-index"));
+            // Add to map, so we pull the latest value
+            pendingChanges.current.set(index, entry.isIntersecting);
+          });
+
+          debouncedSetVisible();
         },
         {
           root: containerRef.current,
@@ -91,6 +110,7 @@ export const useObserver = (
         observer.disconnect();
       }
       debouncedObservation.cancel();
+      debouncedSetVisible.cancel();
 
       if (container) {
         container.removeEventListener("scroll", debouncedObservation);
