@@ -5,8 +5,9 @@ export const GET = (request: NextRequest) => {
   const token = url.searchParams.get("continuation");
   const tokenNum = token ? parseInt(token) : null;
 
-  const count = Math.round(
-    Math.random() * (tokenNum ? Math.min(tokenNum, 50) : 50)
+  const count = Math.max(
+    1,
+    Math.round(Math.random() * (tokenNum ? Math.min(tokenNum, 50) : 50))
   );
   const shouldSendToken = count % 2 === 0;
 
