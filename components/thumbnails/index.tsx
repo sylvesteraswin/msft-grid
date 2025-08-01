@@ -1,5 +1,10 @@
 "use client";
-import { type RefCallback, type Dispatch, type SetStateAction } from "react";
+import {
+  type RefCallback,
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+} from "react";
 import Image from "next/image";
 
 import { useEffect, useState, useRef } from "react";
@@ -17,38 +22,55 @@ interface Props {
 }
 
 export const Thumbnails = ({ visible, setVisible }: Props) => {
+  const isLoading = useRef(false);
+  const tokenRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLUListElement>(null);
-  // const [data, setData] = useState<DataType | null>(null);
   const [images, setImages] = useState<string[] | null>(null);
+  const handleLoading = useCallback(async (token?: string | null) => {
+    await fetch(`/api/items${token ? `?continuation=${token}` : ""}`)
+      .then((res) => res.json() as Promise<DataType>)
+      .then((response) =>
+        fetchImage(response.items, "thumbnail")
+          .then((images) => {
+            setImages((prevImages) => {
+              const newImages = [...(prevImages || []), ...images];
+              return newImages;
+            });
+            tokenRef.current = response.token;
+          })
+          .catch((error) => {
+            console.error("Error fetching images:", error);
+          })
+          .finally(() => {
+            isLoading.current = false;
+            console.log("Loading complete, current token:", response.token);
+          })
+      );
+  }, []);
+
+  const handleLoadMore = useCallback(() => {
+    if (isLoading.current || !tokenRef.current) return;
+    isLoading.current = true;
+    handleLoading(tokenRef.current);
+  }, [handleLoading]);
+
   const [imgRefs /* , visibleItems */] = useObserver(
     containerRef,
     images?.length,
-    visible,
-    setVisible
+    setVisible,
+    handleLoadMore
   );
 
   useEffect(() => {
-    async function fetchItems() {
-      const response = await fetch("/api/items").then(
-        (res) => res.json() as Promise<DataType>
-      );
-      await fetchImage(response.items, "thumbnail")
-        .then((images) => {
-          setImages(images);
-        })
-        .catch((error) => {
-          console.error("Error fetching images:", error);
-        });
-      // console.log(">>response", response, images);
-      // setData(response)
-    }
-
-    fetchItems();
+    handleLoading();
   }, []);
 
   const setRef: RefCallback<HTMLLIElement> = (el) => {
     if (el && imgRefs && "current" in imgRefs && imgRefs.current) {
-      // console.log(el)
+      if (el.getAttribute("data-index") === "LOAD_MORE") {
+        imgRefs.current.push(el);
+        return;
+      }
       const index = Number(el.getAttribute("data-index"));
       imgRefs.current[index] = el;
     }
@@ -71,7 +93,7 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
             className="relative aspect-[600/400]"
             key={`thumbnail-${index}-${url}`}
             ref={setRef}
-            data-index={index}
+            data-index={index + 1}
           >
             <Image
               unoptimized
@@ -83,6 +105,15 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
             />
           </li>
         ))}
+      {tokenRef.current && (
+        <li
+          data-index={"LOAD_MORE"}
+          ref={setRef}
+          className="text-center text-gray-500 relative aspect-[600/400]"
+        >
+          Loading...
+        </li>
+      )}
     </ul>
   );
 };

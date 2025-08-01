@@ -11,8 +11,8 @@ import { debounce } from "lodash";
 export const useObserver = (
   containerRef: RefObject<HTMLUListElement | null>,
   itemsCount: number | undefined,
-  visible: Set<number>,
-  setVisible: Dispatch<SetStateAction<Set<number>>>
+  setVisible: Dispatch<SetStateAction<Set<number>>>,
+  handleLoadMore: () => void
 ) => {
   const imgRefs = useRef<(HTMLLIElement | null)[]>([]);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -25,6 +25,17 @@ export const useObserver = (
             const newList = new Set<number>(prevVisible);
 
             entries.forEach((entry) => {
+              const isLoadMore =
+                entry.target.getAttribute("data-index") === "LOAD_MORE";
+              if (isLoadMore) {
+                if (entry.isIntersecting) {
+                  // Load more items logic can be implemented here
+                  if (typeof handleLoadMore === "function") {
+                    handleLoadMore();
+                  }
+                }
+                return;
+              }
               const index = Number(entry.target.getAttribute("data-index"));
               if (entry.isIntersecting) {
                 newList.add(index);
@@ -42,7 +53,7 @@ export const useObserver = (
         }
       );
     }
-  }, [containerRef, setVisible]);
+  }, [containerRef, setVisible, handleLoadMore]);
 
   const performObservation = useMemo(() => {
     return () => {

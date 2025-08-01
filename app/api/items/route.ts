@@ -6,17 +6,19 @@ export const GET = (request: NextRequest) => {
   const tokenNum = token ? parseInt(token) : null;
 
   const count = Math.round(
-    typeof tokenNum === "number" ? tokenNum : Math.random() * 50
+    Math.random() * (tokenNum ? Math.min(tokenNum, 50) : 50)
   );
   const shouldSendToken = count % 2 === 0;
+
+  console.log("Token:", token);
 
   return NextResponse.json({
     items: Array.from(
       {
         length: count,
       },
-      (_, index) => index
+      (_, index) => index + (tokenNum || 0) + 1
     ),
-    token: shouldSendToken ? Math.random() : null,
+    token: shouldSendToken ? count + (tokenNum || 0) : null,
   });
 };
