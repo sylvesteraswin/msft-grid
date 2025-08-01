@@ -18,9 +18,9 @@ interface Props {
 
 export const Thumbnails = ({ visible, setVisible }: Props) => {
   const containerRef = useRef<HTMLUListElement>(null);
-  const [data, setData] = useState<DataType | null>(null);
+  // const [data, setData] = useState<DataType | null>(null);
   const [images, setImages] = useState<string[] | null>(null);
-  const [imgRefs, visibleItems] = useObserver(
+  const [imgRefs /* , visibleItems */] = useObserver(
     containerRef,
     images?.length,
     visible,
