@@ -21,6 +21,7 @@ export function handleCors(request: NextRequest, response: NextResponse) {
 }
 
 export function createCorsResponse(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any,
   request: NextRequest,
   status = 200

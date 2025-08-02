@@ -22,7 +22,7 @@ interface Props {
   setVisible: Dispatch<SetStateAction<Set<number>>>;
 }
 
-export const Thumbnails = ({ visible, setVisible }: Props) => {
+export const Thumbnails = ({ setVisible }: Props) => {
   const isLoading = useRef(false);
   const tokenRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLUListElement>(null);
