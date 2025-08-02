@@ -15,10 +15,10 @@ export const pages = [
 export const ASSET_PREFIX =
   process.env.NODE_ENV === "production"
     ? process.env.ASSET_PREFIX ||
-      // VERCEL_PROJECT_PRODUCTION_URL is the direct production URL without auth
+      // VERCEL_PROJECT_PRODUCTION_URL is now available via next.config.ts env
       (process.env.VERCEL_PROJECT_PRODUCTION_URL
         ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-        : // Fallback to branch URL (also direct)
+        : // Fallback to branch URL (also available via next.config.ts env)
         process.env.VERCEL_BRANCH_URL
         ? `https://${process.env.VERCEL_BRANCH_URL}`
         : undefined)
