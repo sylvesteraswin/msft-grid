@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { useObserver } from "@/lib/use-observer";
 import { fetchImage } from "@/lib/fetch-image";
+import { ASSET_PREFIX } from "@/lib/utils";
 
 interface DataType {
   items: string[];
@@ -27,7 +28,9 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
   const containerRef = useRef<HTMLUListElement>(null);
   const [images, setImages] = useState<string[] | null>(null);
   const handleLoading = useCallback(async (token?: string | null) => {
-    await fetch(`/api/items${token ? `?continuation=${token}` : ""}`)
+    await fetch(
+      `${ASSET_PREFIX}/api/items${token ? `?continuation=${token}` : ""}`
+    )
       .then((res) => res.json() as Promise<DataType>)
       .then((response) => {
         if (!response || !response.items || response.items.length === 0) {

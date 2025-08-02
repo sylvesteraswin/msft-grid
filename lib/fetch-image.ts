@@ -1,3 +1,5 @@
+import { ASSET_PREFIX } from "@/lib/utils";
+
 const imageCache = new Map<string, string>();
 
 const getCacheKey = (id: string | number, type: "thumbnail" | "poster") =>
@@ -27,7 +29,7 @@ export const fetchImage = async (
     if (newIds.length > 0) {
       const newResults = await Promise.all(
         newIds.map((id) =>
-          fetch(`/api/${type}/${id}`).then((res) => res.json())
+          fetch(`${ASSET_PREFIX}/api/${type}/${id}`).then((res) => res.json())
         )
       ).then((res) => res.map(({ url }) => url));
 
