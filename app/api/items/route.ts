@@ -1,4 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
+import { createCorsResponse, handleOptions } from "@/lib/cors";
+
+export const OPTIONS = (request: NextRequest) => handleOptions(request);
 
 export const GET = (request: NextRequest) => {
   const url = new URL(request.url);
@@ -13,13 +16,16 @@ export const GET = (request: NextRequest) => {
 
   console.log("Token:", token);
 
-  return NextResponse.json({
-    items: Array.from(
-      {
-        length: count,
-      },
-      (_, index) => index + (tokenNum || 0) + 1
-    ),
-    token: shouldSendToken ? count + (tokenNum || 0) : null,
-  });
+  return createCorsResponse(
+    {
+      items: Array.from(
+        {
+          length: count,
+        },
+        (_, index) => index + (tokenNum || 0) + 1
+      ),
+      token: shouldSendToken ? count + (tokenNum || 0) : null,
+    },
+    request
+  );
 };

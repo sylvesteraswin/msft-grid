@@ -1,6 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
+import { createCorsResponse, handleOptions } from "@/lib/cors";
 
 // https://placehold.co/600x400?text=Hello+World
+
+export const OPTIONS = (request: NextRequest) => handleOptions(request);
 
 export const GET = async (
   request: NextRequest,
@@ -9,10 +12,13 @@ export const GET = async (
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    return createCorsResponse({ error: "ID is required" }, request, 400);
   }
 
-  return NextResponse.json({
-    url: `https://placehold.co/600x400?text=${id}`,
-  });
+  return createCorsResponse(
+    {
+      url: `https://placehold.co/600x400?text=${id}`,
+    },
+    request
+  );
 };
