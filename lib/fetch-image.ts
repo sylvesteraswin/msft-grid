@@ -29,7 +29,11 @@ export const fetchImage = async (
     if (newIds.length > 0) {
       const newResults = await Promise.all(
         newIds.map((id) =>
-          fetch(`${ASSET_PREFIX}/api/${type}/${id}`).then((res) => res.json())
+          fetch(
+            `${
+              typeof ASSET_PREFIX !== "undefined" ? ASSET_PREFIX : ""
+            }/api/${type}/${id}`
+          ).then((res) => res.json())
         )
       ).then((res) => res.map(({ url }) => url));
 

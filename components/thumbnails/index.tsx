@@ -29,7 +29,9 @@ export const Thumbnails = ({ visible, setVisible }: Props) => {
   const [images, setImages] = useState<string[] | null>(null);
   const handleLoading = useCallback(async (token?: string | null) => {
     await fetch(
-      `${ASSET_PREFIX}/api/items${token ? `?continuation=${token}` : ""}`
+      `${typeof ASSET_PREFIX !== "undefined" ? ASSET_PREFIX : ""}/api/items${
+        token ? `?continuation=${token}` : ""
+      }`
     )
       .then((res) => res.json() as Promise<DataType>)
       .then((response) => {
