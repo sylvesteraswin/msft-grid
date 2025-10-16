@@ -155,3 +155,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 10px;
+}
+
+@media (min-width: 560px) {}
+
+.grid {
+  display: inline;
+}
